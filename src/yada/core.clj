@@ -715,6 +715,9 @@
          vary (rep/vary representations)
 
          journal (:journal options)
+
+         interceptor-chain (or (:interceptor-chain options)
+                               default-interceptor-chain)
          ]
 
      (map->Handler
@@ -723,7 +726,7 @@
         ;;        :authorization (or (:authorization options) (NoAuthorizationSpecified.))
         :base base
         :id (or (:id options) (java.util.UUID/randomUUID))
-        :interceptor-chain default-interceptor-chain
+        :interceptor-chain interceptor-chain
         :known-methods known-methods
         :options options
         :parameters parameters
