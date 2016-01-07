@@ -61,6 +61,7 @@
 
 (defmulti render-map (fn [resource representation] (-> representation :media-type :name)))
 (defmulti render-seq (fn [resource representation] (-> representation :media-type :name)))
+(defmulti render-number (fn [resource representation] (-> representation :media-type :name)))
 
 (defn encode-message [s representation]
   (bs/convert s java.nio.ByteBuffer
@@ -88,6 +89,10 @@
   clojure.lang.APersistentVector
   (to-body [v representation]
     (encode-message (render-seq v representation) representation))
+
+  java.lang.Long
+  (to-body [n representation]
+    (encode-message (render-number n representation) representation))
 
   File
   (to-body [f _]
@@ -155,6 +160,11 @@
   (let [pretty (get-in representation [:media-type :parameters "pretty"])]
     (str (json/encode s {:pretty pretty}) \newline)))
 
+(defmethod render-number "application/json"
+  [s representation]
+  (let [pretty (get-in representation [:media-type :parameters "pretty"])]
+    (str (json/encode s {:pretty pretty}) \newline)))
+
 ;; application/edn
 
 (defmethod render-map "application/edn"
@@ -170,6 +180,10 @@
     (if pretty
       (with-out-str (pprint s))
       (prn-str s))))
+
+(defmethod render-number "application/edn"
+  [n representation]
+  (prn-str n))
 
 ;; text/event-stream
 
@@ -188,6 +202,11 @@
 (defmethod render-seq :default
   [m representation]
   (throw (ex-info (format "No implementation for render-seq for media-type: %s" (:name (:media-type representation)))
+                  {:representation representation})))
+
+(defmethod render-number :default
+  [n representation]
+  (throw (ex-info (format "No implementation for render-number for media-type: %s" (:name (:media-type representation)))
                   {:representation representation})))
 
 
